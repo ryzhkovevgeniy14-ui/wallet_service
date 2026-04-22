@@ -17,7 +17,7 @@ class OperationType(str, Enum):
 class WalletOperationRequest(BaseModel):
     """
     Модель запроса для выполнения операции с кошельком.
-    Используется в POST /api/v1/wallets/{wallet_id}/operation.
+    Используется в POST-запросах.
 
     Содержит тип операции и сумму.
     """
@@ -39,7 +39,7 @@ class WalletOperationRequest(BaseModel):
 class WalletResponse(BaseModel):
     """
     Модель ответа с данными кошелька.
-    Используется в GET /api/v1/wallets/{wallet_id}
+    Используется в GET-запросах.
 
     Возвращает текущий баланс.
     """
