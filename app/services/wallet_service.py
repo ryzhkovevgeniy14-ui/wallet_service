@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from uuid import UUID
 
-from app.models.wallets import Wallet
+from app.models.wallet import Wallet
 from app.schemas.wallets import OperationType, WalletOperationRequest
 
 
@@ -23,7 +23,10 @@ class WalletService:
         wallet = result.scalar_one_or_none()
 
         if not wallet:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Wallet not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Wallet not found"
+            )
 
         return wallet
 
@@ -33,26 +36,20 @@ class WalletService:
             wallet_id: UUID,
             data: WalletOperationRequest
     ) -> Wallet:
-        wallet = await WalletService.get_wallet(session, wallet_id)
 
-        if data.operation_type == OperationType.DEPOSIT:
-            wallet.balance += data.amount
+        async with session.begin():
+            wallet = await WalletService.get_wallet(session, wallet_id)
 
-        elif data.operation_type == OperationType.WITHDRAW:
-            if wallet.balance < data.amount:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Not enough money"
-                )
+            if data.operation_type == OperationType.DEPOSIT:
+                wallet.balance += data.amount
 
-            wallet.balance -= data.amount
+            elif data.operation_type == OperationType.WITHDRAW:
+                if wallet.balance < data.amount:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Not enough money"
+                    )
+                wallet.balance -= data.amount
 
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid operation type"
-            )
-
-        await session.commit()
         await session.refresh(wallet)
         return wallet
