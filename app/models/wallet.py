@@ -8,7 +8,6 @@ from app.db.base import Base
 class Wallet(Base):
     """
     Таблица кошельков.
-
     Используется для хранения баланса.
     """
     __tablename__ = "wallets"

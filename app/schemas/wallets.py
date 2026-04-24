@@ -50,4 +50,5 @@ class WalletResponse(BaseModel):
         )
     ]
 
+    # Позволяет преобразовывать ORM-объект в Pydantic-схему
     model_config = ConfigDict(from_attributes=True)

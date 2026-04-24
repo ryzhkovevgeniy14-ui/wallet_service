@@ -2,9 +2,8 @@ import os
 from dotenv import load_dotenv
 
 
+# Загружаем переменные окружения из файла .env
 load_dotenv()
 
-DATABASE_URL: str | None = os.getenv("DATABASE_URL")
-
-if DATABASE_URL is None:
-    raise ValueError("DATABASE_URL is not set in .env")
+# URL подключения к БД. В Docker используется db:5432, локально localhost:5432
+DATABASE_URL: str = os.getenv("DATABASE_URL")

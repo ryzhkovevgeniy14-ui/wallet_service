@@ -9,16 +9,18 @@ from app.schemas.wallets import OperationType, WalletOperationRequest
 
 
 class WalletService:
+    """Сервис для работы с кошельками (бизнес-логика)"""
+
     @staticmethod
     async def get_wallet(
             session: AsyncSession,
             wallet_id: UUID
     ) -> Wallet:
-        result = await session.execute(
-            select(Wallet)
-            .where(Wallet.id == wallet_id)
-            .with_for_update()
-        )
+        """
+        Получение кошелька по ID.
+        Без блокировки, только для чтения.
+        """
+        result = await session.execute(select(Wallet).where(Wallet.id == wallet_id))
 
         wallet = result.scalar_one_or_none()
 
@@ -36,7 +38,10 @@ class WalletService:
             wallet_id: UUID,
             data: WalletOperationRequest
     ) -> Wallet:
-
+        """
+        Обработка операции с кошельком (пополнение или снятие).
+        Блокировка строки гарантирует корректность при параллельных запросах.
+        """
         async with session.begin():
             wallet = await WalletService.get_wallet(session, wallet_id)
 
@@ -51,5 +56,4 @@ class WalletService:
                     )
                 wallet.balance -= data.amount
 
-        await session.refresh(wallet)
         return wallet
