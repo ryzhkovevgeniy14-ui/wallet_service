@@ -1,8 +1,6 @@
 fastapi
-uvicorn
+uvicorn[standard]
 sqlalchemy
 asyncpg
 alembic
 python-dotenv
-greenlet
-uliweb-alembic
