@@ -84,8 +84,9 @@ curl -X POST http://localhost:8000/api/v1/wallets/123e4567-e89b-12d3-a456-426614
   -H "Content-Type: application/json" \
   -d '{"operation_type": "WITHDRAW", "amount": 300}'
 ```
+
+## Структура проекта
 ```txt
-Структура проекта
 text
 ├── app/
 │   ├── core/          # конфигурация
