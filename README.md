@@ -14,7 +14,12 @@
 ## Запуск через Docker Compose
 
 ```bash
-docker-compose up -d
+docker compose up --build
+```
+Если postgres уже запускался ранее:
+```bash
+docker compose down -v
+docker compose up --build
 ```
 
 ## Сервисы:
