@@ -85,6 +85,26 @@ curl -X POST http://localhost:8000/api/v1/wallets/123e4567-e89b-12d3-a456-426614
   -d '{"operation_type": "WITHDRAW", "amount": 300}'
 ```
 
+## Тестирование
+```bash
+# Получение кошелька
+pytest tests/test_wallet.py::test_wallet_exists -v
+
+# Кошелёк не найден
+pytest tests/test_wallet.py::test_wallet_not_found -v
+
+# Пополнение
+pytest tests/test_wallet.py::test_deposit -v
+
+# Снятие
+pytest tests/test_wallet.py::test_withdraw -v
+
+# Снятие больше баланса
+pytest tests/test_wallet.py::test_withdraw_too_much -v
+
+# Конкурентность
+pytest tests/test_wallet.py::test_concurrent_withdraw -v
+```
 ## Структура проекта
 ```txt
 text
