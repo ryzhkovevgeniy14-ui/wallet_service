@@ -12,11 +12,20 @@
 - **Docker** — контейнеризация
 
 ## Запуск через Docker Compose
+Перед запуском создайте файл `.env`:
 
+```env
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=admin
+POSTGRES_DB=wallet_service_db
+
+DATABASE_URL=postgresql+asyncpg://postgres:admin@localhost:5432/wallet_service_db
+```
+Запуск приложения:
 ```bash
 docker compose up --build
 ```
-Если postgres уже запускался ранее:
+Если PostgreSQL уже запускался ранее и необходимо пересоздать базу:
 ```bash
 docker compose down -v
 docker compose up --build
@@ -42,7 +51,6 @@ GET /api/v1/wallets/{wallet_id}
   "balance": 100
 }
 ```
-
 ### Изменение баланса
 ```http
 POST /api/v1/wallets/{wallet_id}/operation
@@ -74,6 +82,24 @@ Content-Type: application/json
 
 - **404** — **кошелёк не найден**
 
+## Конкурентность
+
+Для корректной обработки параллельных операций над одним кошельком используется блокировка строки PostgreSQL:
+
+```python
+SELECT ... FOR UPDATE
+```
+
+В SQLAlchemy используется:
+
+```python
+.with_for_update()
+```
+
+Это предотвращает состояние гонки при одновременном изменении баланса несколькими запросами.
+
+Транзакция гарантирует, что операции изменения баланса выполняются последовательно.
+
 ## Примеры запросов (curl)
 ```bash
 # Получить баланс
@@ -91,40 +117,40 @@ curl -X POST http://localhost:8000/api/v1/wallets/123e4567-e89b-12d3-a456-426614
 ```
 
 ## Тестирование
+
+Запуск всех тестов:
+
 ```bash
-# Получение кошелька
-pytest tests/test_wallet.py::test_wallet_exists -v
-
-# Кошелёк не найден
-pytest tests/test_wallet.py::test_wallet_not_found -v
-
-# Пополнение
-pytest tests/test_wallet.py::test_deposit -v
-
-# Снятие
-pytest tests/test_wallet.py::test_withdraw -v
-
-# Снятие больше баланса
-pytest tests/test_wallet.py::test_withdraw_too_much -v
-
-# Конкурентность
-pytest tests/test_wallet.py::test_concurrent_withdraw -v
+docker compose exec app pytest tests/test_wallet.py -v
 ```
+
+Проверяемые сценарии:
+
+- получение существующего кошелька;
+- получение несуществующего кошелька;
+- пополнение баланса;
+- списание средств;
+- попытка списания большей суммы;
+- конкурентное выполнение двух операций;
+- стресс-тест: 10 параллельных списаний.
+
 ## Структура проекта
+
 ```txt
-text
 ├── app/
-│   ├── core/          # конфигурация
-│   ├── db/            # БД: сессии, зависимости
-│   ├── models/        # SQLAlchemy модели
-│   ├── routers/       # эндпоинты
-│   ├── schemas/       # Pydantic схемы
-│   ├── services/      # бизнес-логика
-│   └── main.py        # точка входа
-├── migrations/        # alembic миграции
-├── tests/             # тесты
-├── docker-compose.yaml
-├── Dockerfile
-└── requirements.txt
-```
+│   ├── core/              # конфигурация приложения
+│   ├── db/                # подключение к БД, сессии, зависимости
+│   ├── models/            # SQLAlchemy модели
+│   ├── routers/           # API endpoints
+│   ├── schemas/           # Pydantic схемы запросов и ответов
+│   ├── services/          # бизнес-логика
+│   └── main.py            # точка входа приложения
+├── migrations/            # Alembic миграции
+├── tests/                 # автоматические тесты
+├── alembic.ini            # конфигурация Alembic
+├── pytest.ini             # конфигурация pytest
+├── docker-compose.yaml    # запуск приложения и PostgreSQL
+├── Dockerfile             # сборка контейнера приложения
+├── requirements.txt       # зависимости Python
+└── README.md
 
