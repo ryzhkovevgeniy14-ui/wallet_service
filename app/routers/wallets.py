@@ -16,7 +16,10 @@ router = APIRouter()
     response_model=WalletResponse,
     status_code=status.HTTP_200_OK
 )
-async def get_wallet(wallet_id: UUID, session: AsyncSession = Depends(get_async_db)):
+async def get_wallet(
+        wallet_id: UUID,
+        session: AsyncSession = Depends(get_async_db)
+):
     """
     Получение текущего баланса кошелька
     """
@@ -30,9 +33,10 @@ async def get_wallet(wallet_id: UUID, session: AsyncSession = Depends(get_async_
     status_code=status.HTTP_200_OK
 )
 async def wallet_operation(
-    wallet_id: UUID,
-    data: WalletOperationRequest,
-    session: AsyncSession = Depends(get_async_db)):
+        wallet_id: UUID,
+        data: WalletOperationRequest,
+        session: AsyncSession = Depends(get_async_db)
+):
     """
     Изменение баланса кошелька.
 
